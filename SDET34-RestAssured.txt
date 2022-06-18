@@ -1,0 +1,848 @@
+Serialization/De-serialization
+
+Converting java object to json file is called as serialization
+parser used : jackson Mapper
+
+public class Serialization {
+	
+public static void main(String[] args) throws JsonGenerationException, JsonMappingException, IOException {
+		
+      EmployeeDetails emp = new EmployeeDetails("Chaitra","Banglore", "chaitra@gmail.com");
+		
+	ObjectMapper obj = new ObjectMapper();
+	obj.writeValue(new File("./Sample.json"), emp);
+	}
+
+
+Converting json File to java Object is called as Deserialization
+
+public static void main(String[] args) throws JsonParseException, JsonMappingException, IOException {
+		
+      ObjectMapper obj = new ObjectMapper();
+		
+	EmployeeDetails e1 = obj.readValue(new File("./Sample.json"), EmployeeDetails.class);
+		
+	System.out.println(e1.getName());
+	System.out.println(e1.getEmail());
+	}
+
+
+https://github.com/Chaitra9632/SerializationDeserialization.git
+=====================================================================================
+Introductions to RestAssured
+
+->Rest-Assured is a Java based library that is used to test RESTful Web Services. 
+  This library behaves like a headless Client to access REST web services
+->Rest Assured simple java libraries  for testing of Rest WebServcie API
+->Rest-Assured library also provides ability to validate the Rest-HTTP Responses received  from server. 
+  For e.g. we can verify the Status code, Status message, Headers and even the Body of the response. This makes Rest-Assured a very flexible library that can be used for testing.
+->It support both  XML and JSON 
+
+====================================================================================
+Class Diagram of RestAssured
+=====================================================
+CRUD Operations without BDD
+
+=> Create => POST() => 201
+public void createProjectTest()
+    {
+	//Step 1: Create the pre requisites - request Body
+	JSONObject jObj = new JSONObject();
+	jObj.put("createdBy", "Chaitra");
+	jObj.put("projectName", "Xylem1");
+	jObj.put("status", "Completed");
+	jObj.put("teamSize", 12);
+		
+	RequestSpecification req = RestAssured.given();
+	req.body(jObj);
+	req.contentType(ContentType.JSON);
+		
+	//Step 2: Perform the Action
+		
+	Response response = req.post("http://localhost:8084/addProject");
+		
+	//Step 3: Validate the response
+	System.out.println(response.getContentType());
+	System.out.println(response.asString());
+	System.out.println(response.prettyPrint());
+	System.out.println(response.prettyPeek());
+    }
+
+=> Read => GET() => 200
+
+public void getAllProjects()
+   {
+	 //Step 1: Create a pre requisite
+	//Step 2: Perform the actiomn
+	Response resp = RestAssured.get("http://localhost:8084/projects");
+		
+	//Step 3: Provide Validation
+	resp.then().log().all();
+	int actStatus = resp.getStatusCode();
+	Assert.assertEquals(200, actStatus);
+   }
+
+=> Update => PUT() => 200
+
+public void updateProject()
+	{
+		//Step1: create pre requisites
+		JSONObject jObj = new JSONObject();
+		jObj.put("createdBy", "Chaitra");
+		jObj.put("projectName", "Xylem1");
+		jObj.put("status", "Completed");
+		jObj.put("teamSize", 15);
+		
+		RequestSpecification req = RestAssured.given();
+		req.body(jObj);
+		req.contentType(ContentType.JSON);
+		
+		//Step2: perform action
+		Response resp = req.put("http://localhost:8084/projects/TY_PROJ_3203");
+		
+		//Step 3: Validation
+		resp.then().log().all();
+		int actStatus = resp.getStatusCode();
+		Assert.assertEquals(actStatus, 200);
+	}
+
+=> Delete => DELETE() => 204
+
+public void deleteProject()
+	{
+		//Step 1: Create Prerequities
+		//STep 2: Perform Action
+		Response resp = RestAssured.delete("http://localhost:8084/projects/TY_PROJ_1604");
+		
+		//Step3: validate
+		resp.then().log().all();
+		int actStatus = resp.getStatusCode();
+		Assert.assertEquals(actStatus, 204);
+	}
+
+
+Disadvantages:
+-> Unneccessary variables are used to store the data
+=======================================================================================
+CRUD Operations with BDD
+
+-given() -> Preconditions
+-when() -> Actual Actions
+-then() -> Validations
+-With the help of method Chaining Unnccessary variable usage can be reduced
+
+=> Create => POST() => 201
+
+public void createProject()
+	{
+		JavaLibrary jLib = new JavaLibrary();
+		
+		//Step 1: craete pre requisite
+		JSONObject jObj = new JSONObject();
+		jObj.put("createdBy", "Nithesh");
+		jObj.put("projectName", "Xylem "+jLib.getRandomNumber());
+		jObj.put("status", "Completed");
+		jObj.put("teamSize", 12);
+		
+		baseURI ="http://localhost";
+		port = 8084;
+		
+		given()
+		 .body(jObj)
+		 .contentType(ContentType.JSON)
+		
+		.when()  //Step 2: perform action
+		 .post("/addProject")
+		 
+		.then()  //Step 3: Validation
+		 .assertThat()
+		 .statusCode(201)
+		 .contentType(ContentType.JSON)
+		 .log().all();
+
+
+=> Read => GET() => 200
+
+public void getAllProjects()
+	{
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		when()
+		 .get("/projects")
+		.then()
+		 .log().all();
+	}
+
+
+=> Update => PUT() => 200
+
+public void updateProject()
+	{
+		
+		//Step 1: Create the pre requisites - request Body
+		JSONObject jObj = new JSONObject();
+		jObj.put("createdBy", "Nithesh");
+		jObj.put("projectName", "Xylem11234");
+		jObj.put("status", "Completed");
+		jObj.put("teamSize", 30);
+		
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		given()
+		 .body(jObj)
+		 .contentType(ContentType.JSON)
+
+		.when()
+		 .put("/projects/TY_PROJ_3205")
+		 
+		.then()
+		 .assertThat()
+		 .statusCode(200)
+		 .contentType(ContentType.JSON)
+		 .log().all();
+	}
+
+
+
+=> Delete => DELETE() => 204
+
+public void deleteProject()
+	{
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		when()
+		 .delete("/projects/TY_PROJ_3205")
+		.then()
+		 .assertThat()
+		 .statusCode(204)
+		 .log().all();
+	}
+
+======================================================
+Different ways to POST a request
+
+=> Using JSON Object:-
+
+public class CreateProjectUsingJSONObject {
+	
+	@Test
+	public void createProject()
+	{
+		JavaLibrary jLib = new JavaLibrary();
+		
+		//Step 1: create pre requisites
+		JSONObject jObj = new JSONObject();
+		jObj.put("createdBy", "Prakash");
+		jObj.put("projectName", "Allstates "+jLib.getRandomNumber());
+		jObj.put("status", "Completed");
+		jObj.put("teamSize", 100);
+		
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		given()
+		 .body(jObj)
+		 .contentType(ContentType.JSON)
+		 
+		.when()
+		 .post("/addProject")
+		 
+		.then()
+		 .assertThat()
+		 .statusCode(201)
+		 .log().all();
+}
+
+=> Using HashMap:-
+
+public class CreateProjectUsingHashMap {
+	
+	@Test
+	public void createProject()
+	{
+		JavaLibrary jLib = new JavaLibrary();
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		//Step 1: create pre requisites 
+		HashMap map = new HashMap();
+		map.put("createdBy", "Chandan");
+		map.put("projectName", "Sony "+jLib.getRandomNumber());
+		map.put("status", "Created");
+		map.put("teamSize", 4);
+		
+		given()
+		 .body(map)
+		 .contentType(ContentType.JSON)
+		 
+		.when()
+		 .post("/addProject")
+		 
+		.then()
+		 .assertThat().statusCode(201)
+		 .log().all();
+}
+
+=> Using JSON File:- disadvantages of json File is: we cannot append random number
+
+public class CreateProjectUsingJSONfile {
+	
+	@Test
+	public void createProject()
+	{
+		//Step 1: create pre requisites
+		File file = new File(".\\Data.json");
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		given()
+		 .body(file)
+		 .contentType(ContentType.JSON)
+		.when()                        //Step 2: perform Action
+		 .post("/addProject")
+		.then()                       //Step 3: Validation
+		 .assertThat().statusCode(201)
+		 .log().all();
+	
+	}
+
+
+=> Using POJO CLASS:-
+-> pojo stands of plain old java Object -> which is used to create java object for 
+   serialization and deserialization
+
+-> Steps to create pojo
+   1. Declare the required key variables globally
+   2. Create a constructor to initialise these variables
+   3. Provide getters and setters to access these variables
+
+-> POJO Class should be created in src/main/java folder => package name: projectLibrary 
+Class Name: ProjectLibrary
+
+
+public class ProjectLibrary {
+	
+	//Step 1: create the keys as global variables
+	String createdBy;
+	String projectName;
+	String status;
+	int teamSize;
+	
+	//Step 2: create a constructor to initialise the variables
+	public ProjectLibrary(String createdBy, String projectName, String status, int teamSize) {
+		this.createdBy = createdBy;
+		this.projectName = projectName;
+		this.status = status;
+		this.teamSize = teamSize;
+	}
+	
+	//Step 3: Provide getters and setters to access the variables
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getProjectName() {
+		return projectName;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public int getTeamSize() {
+		return teamSize;
+	}
+
+	public void setTeamSize(int teamSize) {
+		this.teamSize = teamSize;
+	}
+
+
+=> Create request using POJO
+
+public class CreateProjectUsingPOJO {
+	
+	@Test
+	public void createProject()
+	{
+		JavaLibrary jLib = new JavaLibrary();
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		//Step 1: create pre requisites
+		ProjectLibrary pLib = new ProjectLibrary("Harendra", "Google "+jLib.getRandomNumber(), "Completed", 0);
+		
+		given()
+		 .body(pLib)
+		 .contentType(ContentType.JSON)
+		.when()                          //Step 2: perform action
+		 .post("/addProject")
+		.then()                          //Step 3: validation
+		 .assertThat().statusCode(201)
+		 .log().all();
+		
+		
+		
+	}
+
+=====================================================================================
+Questions: How do you post complex request in rest Assured?
+           -> JSON File
+           -> POJO Class - recommended
+           -> HashMap 
+           -> Json Object 
+
+=======================================================================================
+Response Validation
+
+-> For every request, response has to be validated in order to check the correctness of 
+   server response
+-> Rest assured also provides assertions as a inbuilt method in ValidatableResponse interface
+   then().assertThat() for response header validation
+
+-> Response Header validation:-
+   Status code and ContentType can be validated with the help of inbuild methods
+   then().assertThat().statusCode(exp Status code)
+   then().assertThat().ContentType(Exp ContentType)
+
+-> Response Body Validation:-
+   response body has to be validated with the help of json path
+   response.jsonPath().get(json path for the required data in response)
+
+There are 2 types of response body validations:---
+
+=> Static Response validation:- when we know where exactly the required data is present 
+   in response we use static response
+   -> static response always return single value
+   -> static response always uses index
+   
+   public class StaticResponseValidationGet {
+	
+	@Test
+	public void staticResponseGet()
+	{
+		//prerequisites
+		String expData = "TY_PROJ_1002";
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		//action
+		Response resp = when()
+				        .get("/projects");
+		
+		//validation
+		String actData = resp.jsonPath().get("[1].projectId");
+		Assert.assertEquals(actData, expData);
+		System.out.println("data verfied ");
+		
+		resp.then().log().all();
+	}
+
+=> Dynamic Response Validation:- When we dont know where exactly the data is present in 
+   the response we use dynamic response
+   -> Dynamic response cannot use index
+   -> Dynamic response always return a collection (multiple values)
+
+   public class DynamicResponseValidation {
+	
+	@Test
+	public void dynamicResponse()
+	{
+		//pre requistes
+		String expData = "TY_PROJ_3035";
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		//Action
+		Response resp = when()
+		                   .get("/projects");
+		
+		//Validation
+		boolean flag = false;
+		List<String> pIDs = resp.jsonPath().get("projectId");
+		for(String projectID : pIDs)
+		{
+			if(projectID.equalsIgnoreCase(expData))
+			{
+				flag = true;
+			}
+		}
+		
+		Assert.assertTrue(flag);
+		System.out.println("data verfied");
+		
+		resp.then().log().all();
+	}
+
+=> Response time Validation:-
+->In order to validate response time there are no inbuilt methods in restassured 
+  where we can specify the range of values like lessThan() or greaterThan()
+-> Hence we use HAMCREST Matchers to validate response TIME
+
+<!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest -->
+<dependency>
+    <groupId>org.hamcrest</groupId>
+    <artifactId>hamcrest</artifactId>
+    <version>2.2</version>
+    <scope>test</scope>
+</dependency>
+
+
+public class ResponseTimeValidation {
+	
+	@Test
+	public void responseTimeValidation()
+	{
+		//prerequisites
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		//Action
+		when()
+		 .get("/projects")
+		 
+		//validation
+		.then()
+		  .assertThat().time(Matchers.lessThan(50L),TimeUnit.MILLISECONDS)
+		  .log().all();
+		 
+	}
+
+============================================================================================
+Data Driven Testing in RestAssured
+
+=> Use Dataprovider and POJO Class
+   -> Create multiple projects with different set of Data
+
+public class CreateMultipleProjectWithDiffData {
+	
+	@Test(dataProvider = "getData")
+	public void createProject(String createdBy, String projectName, String status, int teamSize)
+	{
+		
+		//Prerequisties
+		JavaLibrary jLib = new JavaLibrary();
+		ProjectLibrary pLib = new ProjectLibrary(createdBy, projectName+jLib.getRandomNumber(), status, teamSize);
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		
+		given()
+		 .body(pLib)
+		 .contentType(ContentType.JSON)
+	   
+		//Actions
+		.when()
+		 .post("/addProject")
+		 
+		//Validation
+		.then().log().all();
+		
+		
+	}
+	
+	
+	@DataProvider(name = "getData")
+	public Object[][] data()
+	{
+		Object[][] data = new Object[3][4];
+		
+		data[0][0] = "Chaitra";
+		data[0][1] = "Dell";
+		data[0][2] = "Completed";
+		data[0][3] = 12;
+		
+		data[1][0] = "Vijay";
+		data[1][1] = "HP";
+		data[1][2] = "Created";
+		data[1][3] = 15;
+		
+		data[2][0] = "Pavan";
+		data[2][1] = "TYSS";
+		data[2][2] = "On Going";
+		data[2][3] = 20;
+		
+		
+		return data;
+	}
+
+======================================================================================
+Parameters in API
+
+=> path parameter -> associated with resource path
+                     executing same request with different enpoints
+
+
+public class PathParameter {
+	
+	@Test
+	public void getSingleProject()
+	{
+		//Pre requisites
+		baseURI ="http://localhost";
+		port = 8084;
+				
+		
+		given()
+	      .pathParam("pid", "TY_PROJ_3215")
+	      
+		//Actions
+	    .when()
+	      .get("/projects/{pid}")
+		
+		//Validations
+	     .then()
+	      .log().all();
+	}
+
+
+
+=> Query parameter -> associated with query string of Web URL
+                      execute same request with different search criteria
+
+public class QueryParameter {
+	
+	@Test
+	public void queryParameter()
+	{
+	    baseURI = "https://reqres.in";
+	    
+	    given()
+	     .queryParam("page", 3)
+	     
+	    .when()
+	     .get("/api/users")
+	     
+	    .then()
+	     .log().all();
+	}
+
+
+=> Form Parameter -> associated with request body/form data
+                     execute same request with different form data
+
+
+
+sample parameters for github apis
+
+public class ParametersTestForGIt {
+	
+	@Test
+	public void parametersTest()
+	{
+		baseURI ="https://api.github.com";
+		
+		given()
+		 .pathParam("username", "Chaitra9632")
+		 .queryParam("per_page", 30)
+		 .queryParam("page", 1)
+		 
+		.when()
+		 .get("/users/{username}/repos")
+		 
+		.then().assertThat().statusCode(200).log().all();
+	}
+
+
+============================================================================================
+Request Chaining:- capturing the data from one response and providing it as a 
+                   parameter or variable or input to another request is called as
+                   request Chaining
+-> It will avoid dependencies between request - avoid dependencies with existing data
+
+public class CreateProjectAndGetProject {
+	
+	@Test
+	public void requestChaining1()
+	{
+		//Step 1: create a project using POJO
+		JavaLibrary jLib = new JavaLibrary();
+		ProjectLibrary pLib = new ProjectLibrary("Swathi", "Firefox "+jLib.getRandomNumber(), "Completed", 24);
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		Response resp = given()
+		                  .body(pLib)
+		                  .contentType(ContentType.JSON)
+		                .when()
+		                  .post("/addProject");
+		
+		//capture the project id
+		String proId = resp.jsonPath().get("projectId");
+		System.out.println(proId);
+		resp.then().log().all();
+		
+		//Create a get request and pass proID as path parameter
+		given()
+		 .pathParam("pid", proId)
+		.when()
+		 .get("/projects/{pid}")
+		.then()
+		 .assertThat().statusCode(200).log().all();
+		 
+		
+	}
+
+
+=====================================================================================
+Authentication 
+
+-> Basic Auth -> Username and password
+              -> not secured as username and passowrd can be shared and remembered
+
+public class BasicAuth {
+	
+	@Test
+	public void basicAuth()
+	{
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		given()
+		 .auth().basic("rmgyantra", "rmgy@9999")
+		 
+		.when()
+		 .get("/login")
+		 
+		.then()
+		 .assertThat().statusCode(202).log().all();
+	}
+	
+	
+	@Test
+	public void basicPreEmptiveAuth()
+	{
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		given()
+		 .auth().preemptive().basic("rmgyantra", "rmgy@9999")
+		 
+		 .when()
+		 .get("/login")
+		 
+		.then()
+		 .assertThat().statusCode(202).log().all();
+	}
+	
+	@Test
+	public void basicDigestiveAuth()
+	{
+		baseURI = "http://localhost";
+		port = 8084;
+		
+		given()
+		 .auth().digest("rmgyantra", "rmgy@9999")
+		 
+		 .when()
+		 .get("/login")
+		 
+		.then()
+		 .assertThat().statusCode(202).log().all();
+	}
+
+
+-> Bearer Token -> This token is generated by API developers and shared to testing team
+                   This token cannot be easily remembered and hence it provides one level security
+                   This token can be used multiple times untill the developer changes.
+
+
+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
+base URI -> https://api.github.com
+Endpoint -> /user/repos
+request Body -> {
+                 "name":"SDET-BEARERREST",
+                 "description":"Rest in peace"
+                }
+
+public class BearerToken {
+	
+	@Test
+	public void bearerToken()
+	{
+		baseURI ="https://api.github.com";
+		JSONObject jObj = new JSONObject();
+		jObj.put("name", "sdet31restAssured");
+		
+		given()
+		 .auth()
+		 .oauth2("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")
+		 .body(jObj)
+		 .contentType(ContentType.JSON)
+		 
+	    .when()
+	     .post("/user/repos")
+	     
+	    .then().log().all();
+}
+
+-> Oauth 2.0 -> Its a authentication standard
+               -> It provides 2 level security 
+               -> API developer will share Client ID and Client Secret 
+               -> With the help client id and client secret a third party application will 
+                  generate a access Token 
+               -> This access Token is valid only for few mins 
+               -> For every execution new token is generated
+
+Client ID - SDET31-REST
+Client Secret - 85d61609bd07fee754bda67379005474
+Redirect URI - 	http://example.com
+
+url to generate token - http://coop.apps.symfonycasts.com/token
+
+public class Oauth2_0 {
+
+	@Test
+	public void oauthAuthentication()
+	{
+		//Create a request to generate accesss token 
+		Response resp = given()
+		 .formParam("client_id", "SDET31-REST")
+		 .formParam("client_secret", "85d61609bd07fee754bda67379005474")
+		 .formParam("grant_type", "client_credentials")
+		 .formParam("redirect_uri", "http://example.com")
+		 .formParam("code", "authorization_code")
+		 
+	    .when()
+	     .post("http://coop.apps.symfonycasts.com/token");
+	     
+	    //Capture the access token from the response of the above request
+		String token = resp.jsonPath().get("access_token");
+		System.out.println(token);
+		
+		
+		//Create another request and use the token to access the APIs
+		given()
+		 .auth().oauth2(token)
+		 .pathParam("USER_ID", 1914)
+		 
+		.when()
+		 .post("http://coop.apps.symfonycasts.com/api/{USER_ID}/eggs-count")
+		 
+		.then().log().all();
+		 
+		 
+	}
+
+
+
+===================================================
+RestAssured Framework
+===================================================
+Interview Questions in API/POSTMAN/RestAssured
+======================================================

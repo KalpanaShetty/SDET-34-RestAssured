@@ -1,0 +1,11 @@
+{
+  "designation": "Team Lead",
+  "dob": "dd/MM/yyyy",
+  "email": "abc@gmail.com",
+  "empName": "Chaitra",
+  "experience": 1.1,
+  "mobileNo": "string",
+  "project": "string",
+  "role": "ROLE_EMPLOYEE",
+  "username": "string"
+}
